@@ -1,0 +1,9 @@
+name: cronus
+version: 0.1.0
+
+authors:
+  - Chris Larsen <clarsendev@protonmail.com>
+
+crystal: 1.0.0
+
+license: MIT
