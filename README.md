@@ -1,4 +1,4 @@
-# cronus
+# Chronos
 
 Crystal scheduling system.
 
@@ -8,8 +8,8 @@ Crystal scheduling system.
 
    ```yaml
    dependencies:
-     cronus:
-       github: HCLarsen/cronus
+     chronos:
+       github: HCLarsen/chronos
    ```
 
 2. Run `shards install`
@@ -17,9 +17,9 @@ Crystal scheduling system.
 ## Usage
 
 ```crystal
-require "cronus"
+require "chronos"
 
-scheduler = Cronus.new
+scheduler = Chronos.new
 
 scheduler.in("5m") do
   # do something in 5 minutes
@@ -72,7 +72,7 @@ TODO: Write development instructions here
 
 ## Contributing
 
-1. Fork it (<https://github.com/HCLarsen/cronus/fork>)
+1. Fork it (<https://github.com/HCLarsen/chronos/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
