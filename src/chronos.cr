@@ -1,6 +1,6 @@
 # TODO: Write documentation for `Chronos`
-module Chronos
+class Chronos
   VERSION = "0.1.0"
 
   # TODO: Put your code here
-end
+class
