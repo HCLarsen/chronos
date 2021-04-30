@@ -42,7 +42,17 @@ scheduler.run
 
 Tasks can be added to and deleted from the scheduler while running, without any interruption to execution.
 
-### Error handling
+### Time Zones
+
+The scheduler defaults to Time::Location.local for scheduling recurring events. This can be changed by setting the time zone in either the initializer, or after the fact.
+
+```crystal
+scheduler = Chronos.new(Time::Location.utc)
+
+scheduler.location = Time::Location.local
+```
+
+### Error Handling
 
 By default, any errors raised inside a task are logged to STDERR without any interruption of the scheduler. However, this behaviour can be modified.
 
