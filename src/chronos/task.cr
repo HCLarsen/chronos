@@ -5,7 +5,7 @@ class Chronos
     def initialize(@block)
     end
 
-    abstract def next_run
+    abstract def next_run : Time
 
     def run
       @block.call
