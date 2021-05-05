@@ -63,7 +63,7 @@ class Chronos
         time.shift(hours: 1)
       when :minute
         time.shift(minutes: 1)
-      when :seconds
+      when :second
         time.shift(seconds: 1)
       else
         raise "Invalid frequency"
