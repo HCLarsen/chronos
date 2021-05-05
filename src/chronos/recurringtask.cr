@@ -2,21 +2,72 @@ require "./task"
 
 class Chronos
   class RecurringTask < Task
-    @time : NamedTuple(days: Int32, hours: Int32, minutes: Int32, seconds: Int32)
+    # :nodoc:
+    FREQUENCIES = [:year, :month, :day, :hour, :minute, :second]
+
+    @time : Hash(Symbol, Int32)
 
     def initialize(@frequency : Symbol, time : NamedTuple, &@block)
-      @time = {days: 0, hours: 0, minutes: 0, seconds: 0}.merge(time)
+      if !FREQUENCIES.includes? @frequency
+        raise "Invalid frequency"
+      end
+
+      @time = time.to_h
     end
 
     def next_run : Time
-      time = Time.local.time_of_day
-      time_difference = Time::Span.new(**@time) - time
-      beginning = Time.local.at_beginning_of_day
-      if (time_difference < Time::Span::ZERO)
-        beginning = beginning.shift(days: 1)
-      end
+      now = Time.local
 
-      return beginning.shift(**@time)
+      blank_time_hash = {:year => 0, :month => 0, :day => 0, :hour => 0, :minute => 0, :second => 0}
+
+      base_components = beginning_time_components(now)
+      hash = blank_time_hash.merge(base_components).merge(@time)
+
+      time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+
+      if (time < now)
+        shift_time_by_frequency(time)
+      else
+        time
+      end
+    end
+
+    def beginning_time_components(time : Time) : Hash(Symbol, Int32)
+      index = FREQUENCIES.index(@frequency)
+
+      time_components(time).select(FREQUENCIES[0..index])
+    end
+
+    def time_components(time : Time) : Hash(Symbol, Int32)
+      components = {} of Symbol => Int32
+
+      components[:year] = time.year
+      components[:month] = time.month
+      components[:day] = time.day
+      components[:hour] = time.hour
+      components[:minute] = time.minute
+      components[:second] = time.second
+
+      components
+    end
+
+    def shift_time_by_frequency(time : Time) : Time
+      case @frequency
+      when :year
+        time.shift(years: 1)
+      when :month
+        time.shift(months: 1)
+      when :day
+        time.shift(days: 1)
+      when :hour
+        time.shift(hours: 1)
+      when :minute
+        time.shift(minutes: 1)
+      when :seconds
+        time.shift(seconds: 1)
+      else
+        raise "Invalid frequency"
+      end
     end
   end
 end
