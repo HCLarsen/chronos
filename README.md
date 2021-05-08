@@ -26,7 +26,7 @@ scheduler.in("5m") do
 end
 
 scheduler.at("01/07/2022 0:00:00") do
-  Do something at this specific point in time.
+  # do something at this specific point in time.
 end
 
 scheduler.every("1h") do
