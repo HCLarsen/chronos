@@ -2,6 +2,8 @@
 
 Crystal scheduling system.
 
+**WARNING** This shard is not ready for use yet.
+
 ## Installation
 
 1. Add the dependency to your `shard.yml`:
