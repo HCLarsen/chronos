@@ -32,6 +32,17 @@ class RecurringTaskTest < Minitest::Test
     end
   end
 
+  def test_initializes_with_multiple_times
+    times = [{day: 1}, {day: 15}]
+    task = Chronos::RecurringTask.new(:month, times) do
+      @test_val = 5
+    end
+
+    Timecop.travel(Time.local(2021, 7, 2, 9, 30, 5)) do
+      assert_equal Time.local(2021, 7, 15, 0, 0, 0), task.next_run
+    end
+  end
+
   def test_calculates_next_across_timezone_change
     time_of_day = {hour: 8, minute: 30}
     task = Chronos::RecurringTask.new(:day, time_of_day) do

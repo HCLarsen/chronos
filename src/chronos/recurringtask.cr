@@ -5,31 +5,43 @@ class Chronos
     # :nodoc:
     FREQUENCIES = [:year, :month, :day, :hour, :minute, :second]
 
-    @time : Hash(Symbol, Int32)
+    @frequency : Symbol
+    @times : Array(Hash(Symbol, Int32))
 
-    def initialize(@frequency : Symbol, time : NamedTuple, &@block)
+    def initialize(frequency : Symbol, time : NamedTuple, &block)
       if !FREQUENCIES.includes? @frequency
         raise "Invalid frequency"
       end
 
-      @time = time.to_h
+      @times = [time.to_h]
+    end
+
+    def initialize(@frequency : Symbol, times : Array(NamedTuple), &@block)
+      if !FREQUENCIES.includes? @frequency
+        raise "Invalid frequency"
+      end
+
+      @times = times.map { |e| e.to_h }
     end
 
     def next_run : Time
       now = Time.local
-
       blank_time_hash = {:year => 0, :month => 0, :day => 0, :hour => 0, :minute => 0, :second => 0}
-
       base_components = beginning_time_components(now)
-      hash = blank_time_hash.merge(base_components).merge(@time)
 
-      time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+      next_times = @times.map do |time|
+        hash = blank_time_hash.merge(base_components).merge(time)
 
-      if (time < now)
-        shift_time_by_frequency(time)
-      else
-        time
+        time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+
+        if (time < now)
+          shift_time_by_frequency(time)
+        else
+          time
+        end
       end
+
+      next_times.min
     end
 
     def beginning_time_components(time : Time) : Hash(Symbol, Int32)
