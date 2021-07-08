@@ -8,7 +8,7 @@ class Chronos
     @frequency : Symbol
     @times : Array(Hash(Symbol, Int32))
 
-    def initialize(frequency : Symbol, time : NamedTuple, &block)
+    def initialize(@frequency : Symbol, time : NamedTuple, &@block)
       if !FREQUENCIES.includes? @frequency
         raise "Invalid frequency"
       end
