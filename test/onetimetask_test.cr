@@ -15,4 +15,16 @@ class OneTimeTaskTest < Minitest::Test
     task.run
     assert_equal 5, @test_val
   end
+
+  def test_raises_for_past_date
+    run_time = Time.local - 1.minutes
+
+    error = assert_raises do
+      task = Chronos::OneTimeTask.new(run_time) do
+        puts "Hello world"
+      end
+    end
+
+    assert_equal "Invalid date", error.message
+  end
 end

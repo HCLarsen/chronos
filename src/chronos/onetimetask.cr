@@ -5,6 +5,9 @@ class Chronos
     @run_time : Time
 
     def initialize(@run_time : Time, &@block)
+      if @run_time < Time.local
+        raise "Invalid date"
+      end
     end
 
     def next_run : Time
