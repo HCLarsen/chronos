@@ -17,4 +17,16 @@ class PeriodicTaskTest < Minitest::Test
     task.run
     assert_equal 5, @test_val
   end
+
+  def test_raises_for_negative_span
+    period = -20.minutes
+
+    error = assert_raises do
+      task = Chronos::PeriodicTask.new(period) do
+        puts "Hello world"
+      end
+    end
+
+    assert_equal "Invalid period", error.message
+  end
 end

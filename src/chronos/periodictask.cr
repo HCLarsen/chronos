@@ -6,6 +6,9 @@ class Chronos
     @last_run : Time
 
     def initialize(@period : Time::Span, &@block)
+      if @period < Time::Span::ZERO
+        raise "Invalid period"
+      end
       @last_run = Time.local
     end
 
