@@ -8,9 +8,12 @@ class Chronos
   def initialize(@location = Time::Location.local)
   end
 
-  def in(span : Time::Span, &block)
-    run_time = Time.local + span
+  def at(run_time : Time, &block)
     @tasks << OneTimeTask.new(run_time, &block)
+  end
+
+  def in(span : Time::Span, &block)
+    at(span.from_now, &block)
   end
 
   def run

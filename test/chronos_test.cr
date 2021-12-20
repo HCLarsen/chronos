@@ -10,7 +10,26 @@ class ChronosTest < Minitest::Test
     assert_equal Time::Location.local, scheduler.location
   end
 
-  def test_adds_one_time_task
+  def test_adds_one_time_task_with_at
+    @test_val = 0
+    scheduler = Chronos.new
+
+    scheduler.at(3.milliseconds.from_now) do
+      @test_val = 5
+    end
+
+    task = scheduler.tasks.first
+    assert_equal Chronos::OneTimeTask, task.class
+    scheduler.run
+    
+    sleep 2.milliseconds
+    assert_equal 0, @test_val
+
+    sleep 4.milliseconds
+    assert_equal 5, @test_val
+  end
+
+  def test_adds_one_time_task_with_in
     @test_val = 0
     scheduler = Chronos.new
 
