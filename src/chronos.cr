@@ -18,10 +18,10 @@ class Chronos
 
   def run
     spawn do
-      first_task = @tasks.first
+      first_task = @tasks.shift
       wait = first_task.next_run - Time.local
       sleep wait
-      @tasks.first.run
+      first_task.run
     end
   end
 end

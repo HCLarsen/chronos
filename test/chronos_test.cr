@@ -21,12 +21,14 @@ class ChronosTest < Minitest::Test
     task = scheduler.tasks.first
     assert_equal Chronos::OneTimeTask, task.class
     scheduler.run
-    
+
     sleep 2.milliseconds
     assert_equal 0, @test_val
 
     sleep 4.milliseconds
     assert_equal 5, @test_val
+
+    assert_equal 0, scheduler.tasks.size
   end
 
   def test_adds_one_time_task_with_in
