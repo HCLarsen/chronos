@@ -11,11 +11,11 @@ class ChronosTest < Minitest::Test
   end
 
   def test_adds_one_time_task_with_at
-    @test_val = 0
+    test_val = 0
     scheduler = Chronos.new
 
     scheduler.at(3.milliseconds.from_now) do
-      @test_val = 5
+      test_val = 5
     end
 
     task = scheduler.tasks.first
@@ -23,20 +23,20 @@ class ChronosTest < Minitest::Test
     scheduler.run
 
     sleep 2.milliseconds
-    assert_equal 0, @test_val
+    assert_equal 0, test_val
 
     sleep 4.milliseconds
-    assert_equal 5, @test_val
+    assert_equal 5, test_val
 
     assert_equal 0, scheduler.tasks.size
   end
 
   def test_adds_one_time_task_with_in
-    @test_val = 0
+    test_val = 0
     scheduler = Chronos.new
 
     scheduler.in(3.milliseconds) do
-      @test_val = 5
+      test_val = 5
     end
 
     task = scheduler.tasks.first
@@ -44,9 +44,15 @@ class ChronosTest < Minitest::Test
     scheduler.run
 
     sleep 2.milliseconds
-    assert_equal 0, @test_val
+    assert_equal 0, test_val
 
     sleep 4.milliseconds
-    assert_equal 5, @test_val
+    assert_equal 5, test_val
+  end
+
+  def test_adds_multiple_tasks_out_of_order
+  end
+
+  def test_adds_tasks_when_already_running
   end
 end
