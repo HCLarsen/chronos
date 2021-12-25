@@ -21,7 +21,7 @@ class Chronos
       loop do
         if first_task = @tasks.shift?
           wait = first_task.next_run - Time.local
-          sleep wait
+          sleep [wait, 0.milliseconds].max
           first_task.run
         else
           sleep

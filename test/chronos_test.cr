@@ -73,6 +73,22 @@ class ChronosTest < Minitest::Test
     assert_equal 10, test_val
   end
 
+  def test_executes_multiple_tasks_at_same_time
+    test_val = 0
+    scheduler = Chronos.new
+
+    execute_time = 3.milliseconds.from_now
+
+    scheduler.at(execute_time) { test_val += 5 }
+
+    scheduler.at(execute_time) { test_val += 5 }
+
+    scheduler.run
+
+    sleep 4.milliseconds
+    assert_equal 10, test_val
+  end
+
   def test_adds_tasks_when_already_running
   end
 end
