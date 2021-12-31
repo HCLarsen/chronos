@@ -26,7 +26,7 @@ class Chronos
         size = @tasks.size
         if size > 0
           wait = @tasks.first.next_run - Time.local
-          sleep [wait, 1.milliseconds].max
+          sleep wait if wait > 0.milliseconds
 
           if @tasks.size == size
             @tasks.shift.run

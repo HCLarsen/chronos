@@ -84,8 +84,7 @@ class ChronosTest < Minitest::Test
 
     scheduler.run
 
-    sleep 4.milliseconds
-    sleep 1.milliseconds
+    sleep 5.milliseconds
     assert_equal 10, test_val
   end
 end
