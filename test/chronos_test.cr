@@ -53,6 +53,7 @@ class ChronosTest < Minitest::Test
   def test_adds_multiple_tasks_out_of_order
     test_val = 0
     scheduler = Chronos.new
+    scheduler.run
 
     scheduler.in(6.milliseconds) do
       test_val = 10
@@ -61,8 +62,6 @@ class ChronosTest < Minitest::Test
     scheduler.in(2.milliseconds) do
       test_val = 5
     end
-
-    scheduler.run
 
     assert_equal 0, test_val
 
@@ -86,9 +85,7 @@ class ChronosTest < Minitest::Test
     scheduler.run
 
     sleep 4.milliseconds
+    sleep 1.milliseconds
     assert_equal 10, test_val
-  end
-
-  def test_adds_tasks_when_already_running
   end
 end
