@@ -3,17 +3,22 @@ require "./task"
 class Chronos
   class PeriodicTask < Task
     @period : Time::Span
-    @last_run : Time
+    @next_run : Time
 
-    def initialize(@period : Time::Span, &@block)
+    def initialize(@period : Time::Span, first_run = nil, &@block)
       if @period < Time::Span::ZERO
         raise "Invalid period"
       end
-      @last_run = Time.local
+      @next_run = first_run || Time.local + @period
     end
 
     def next_run : Time
-      @last_run + @period
+      @next_run
+    end
+
+    def run
+      @next_run += @period
+      super
     end
   end
 end
