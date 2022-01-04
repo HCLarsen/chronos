@@ -87,4 +87,43 @@ class ChronosTest < Minitest::Test
     sleep 5.milliseconds
     assert_equal 10, test_val
   end
+
+  def test_executes_periodic_task_periodically
+    test_val = 0
+    scheduler = Chronos.new
+    scheduler.run
+
+    period = 10.milliseconds
+
+    scheduler.every(period) do
+      test_val += 5
+    end
+
+    assert_equal 0, test_val
+    sleep 15.milliseconds
+    assert_equal 5, test_val
+    sleep 10.milliseconds
+    assert_equal 10, test_val
+  end
+
+  def test_executes_periodic_task_with_start
+    test_val = 0
+    scheduler = Chronos.new
+    scheduler.run
+
+    period = 20.milliseconds
+    start_time = 10.milliseconds.from_now
+
+    scheduler.every(period, start_time) do
+      test_val += 5
+    end
+
+    assert_equal 0, test_val
+    sleep 15.milliseconds
+    assert_equal 5, test_val
+    sleep 10.milliseconds
+    assert_equal 5, test_val
+    sleep 10.milliseconds
+    assert_equal 10, test_val
+  end
 end

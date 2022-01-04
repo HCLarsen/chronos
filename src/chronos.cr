@@ -20,6 +20,14 @@ class Chronos
     at(span.from_now, &block)
   end
 
+  def every(period : Time::Span, &block)
+    add_task PeriodicTask.new(period, &block)
+  end
+
+  def every(period : Time::Span, start_time : Time, &block)
+    add_task PeriodicTask.new(period, start_time, &block)
+  end
+
   def run
     spawn name: "Chronos-Main" do
       loop do
@@ -29,7 +37,11 @@ class Chronos
           sleep wait if wait > 0.milliseconds
 
           if @tasks.size == size
-            @tasks.shift.run
+            @tasks.first.run
+
+            if @tasks.first.class == OneTimeTask
+              @tasks.shift
+            end
           end
         else
           sleep
