@@ -35,6 +35,10 @@ scheduler.every("1h") do
   # do something every hour
 end
 
+scheduler.every("1h", "01/07/2022 0:00:00") do
+  # do something every hour starting at midnight on January 7th, 2022
+end
+
 scheduler.every(:day, "08:30:00") do
   # do something at 8:30AM every day
 end
