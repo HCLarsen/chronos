@@ -57,12 +57,16 @@ class Chronos
 
   private def add_task(new_task : Task)
     @tasks << new_task
-    @tasks.sort_by! { |task| task.next_run }
+    sort_tasks
 
     @add_fiber = Fiber.current
 
     if fiber = @fiber
       fiber.resume
     end
+  end
+
+  private def sort_tasks
+    @tasks.sort_by! { |task| task.next_run }
   end
 end
