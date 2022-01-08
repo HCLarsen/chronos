@@ -28,6 +28,10 @@ class Chronos
     add_task PeriodicTask.new(period, start_time, &block)
   end
 
+  def every(period : Symbol, time : NamedTuple, &block)
+    add_task RecurringTask.new(period, time, &block)
+  end
+
   def run
     spawn name: "Chronos-Main" do
       loop do

@@ -126,4 +126,20 @@ class ChronosTest < Minitest::Test
     sleep 10.milliseconds
     assert_equal 10, test_val
   end
+
+  def test_adds_recurring_task
+    test_val = 0
+    scheduler = Chronos.new
+    scheduler.run
+
+    now = Time.local
+
+    scheduler.every(:minute, {second: now.second + 1}) do
+      test_val = 5
+    end
+
+    assert_equal 0, test_val
+    sleep 1.seconds
+    assert_equal 5, test_val
+  end
 end
