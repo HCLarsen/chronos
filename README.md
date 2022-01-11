@@ -68,7 +68,7 @@ If you wish the scheduler to propagate the error, then you can set #raise_on_err
 scheduler.raise_on_error
 ```
 
-You can also modify the source of the logged error messages:
+You can also specify a destination of error messages:
 
 ```crystal
 scheduler.stderr = File.new("logs/errors.txt", 'w')
