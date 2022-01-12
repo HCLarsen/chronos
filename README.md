@@ -72,7 +72,7 @@ These errors take on the following format, showing time, error class, and error 
 2022-01-11 19:25:10 -05:00: RuntimeError - Random error
 ```
 
-Lastly, it's possible to enter a custom callback using #on_error, allowing you to integrate with a logging system, like Crystal's built in [`Log`(https://crystal-lang.org/api/latest/Log.html)] class.
+Lastly, it's possible to enter a custom callback using #on_error, allowing you to integrate with a logging system, like Crystal's built in [`Log`](https://crystal-lang.org/api/latest/Log.html) class.
 
 ```crystal
 scheduler.on_error do |ex|
