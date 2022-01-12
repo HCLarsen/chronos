@@ -60,25 +60,23 @@ scheduler.location = Time::Location.local
 
 ### Error Handling
 
-By default, any errors raised inside a task are logged to STDERR without any interruption of the scheduler. However, this behaviour can be modified.
-
-If you wish the scheduler to propagate the error, then you can set #raise_on_error to be true:
+By default, any errors raised inside a task are logged to STDERR without any interruption of the scheduler. You can modify the destination of the errors to any `IO::FileDescriptor` or subclass, such as a file.
 
 ```crystal
-scheduler.raise_on_error
+scheduler.stderr = File.new("logs/errors.txt", "w")
 ```
 
-You can also specify a destination of error messages:
+These errors take on the following format, showing time, error class, and error message
 
-```crystal
-scheduler.stderr = File.new("logs/errors.txt", 'w')
+```
+2022-01-11 19:25:10 -05:00: RuntimeError - Random error
 ```
 
-Lastly, it's possible to enter a custom callback using #on_raise:
+Lastly, it's possible to enter a custom callback using #on_error, allowing you to integrate with a logging system, like Crystal's built in [`Log`(https://crystal-lang.org/api/latest/Log.html)] class.
 
 ```crystal
-scheduler.on_raise do |ex|
-  puts "ERROR: #{Time.now} #{ex.message}"
+scheduler.on_error do |ex|
+  Log.error(exception: ex)
 end
 ```
 
