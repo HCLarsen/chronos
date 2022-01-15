@@ -6,10 +6,16 @@ class Chronos
 
   property location : Time::Location
   getter tasks = [] of Task
+  property stderr = STDERR
   @fiber : Fiber?
   @add_fiber : Fiber?
+  @on_error : (Exception ->)?
 
   def initialize(@location = Time::Location.local)
+  end
+
+  def on_error(&on_error : Exception ->)
+    @on_error = on_error
   end
 
   def at(run_time : Time, &block)
@@ -41,7 +47,16 @@ class Chronos
           sleep wait if wait > 0.milliseconds
 
           if @tasks.size == size
-            @tasks.first.run
+            begin
+              @tasks.first.run
+            rescue ex
+              if on_error = @on_error
+                on_error.call(ex)
+              else
+                @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
+                @stderr.flush
+              end
+            end
 
             if @tasks.first.class == OneTimeTask
               @tasks.shift
