@@ -127,7 +127,7 @@ class ChronosTest < Minitest::Test
     assert_equal 10, test_val
   end
 
-  def test_adds_recurring_task
+  def test_executes_recurring_task
     test_val = 0
     scheduler = Chronos.new
     scheduler.run
@@ -141,6 +141,29 @@ class ChronosTest < Minitest::Test
     assert_equal 0, test_val
     sleep 1.seconds
     assert_equal 5, test_val
+  end
+
+  def test_executes_period_and_one_time_tasks
+    array = [] of String
+    scheduler = Chronos.new
+    scheduler.run
+
+    scheduler.every(20.milliseconds) do
+      array << "Periodic"
+    end
+
+    scheduler.in(30.milliseconds) do
+      array << "One Time"
+    end
+
+    sleep 15.milliseconds
+    assert_equal [] of String, array
+    sleep 10.milliseconds
+    assert_equal ["Periodic"] of String, array
+    sleep 10.milliseconds
+    assert_equal ["Periodic", "One Time"] of String, array
+    sleep 10.milliseconds
+    assert_equal ["Periodic", "One Time", "Periodic"] of String, array
   end
 
   def test_outputs_error

@@ -60,6 +60,8 @@ class Chronos
 
             if @tasks.first.class == OneTimeTask
               @tasks.shift
+            else
+              sort_tasks
             end
           end
         else
