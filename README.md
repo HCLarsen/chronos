@@ -82,7 +82,7 @@ end
 
 ## Development
 
-TODO: Write development instructions here
+All new features/modifcations, must be properly tested. Any PRs without passing tests will not be merged.
 
 ## Contributing
 
