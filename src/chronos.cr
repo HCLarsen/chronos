@@ -45,27 +45,27 @@ class Chronos
         if size > 0
           wait = @tasks.first.next_run - Time.local
           sleep wait if wait > 0.milliseconds
-
-          if @tasks.size == size
-            begin
-              @tasks.first.run
-            rescue ex
-              if on_error = @on_error
-                on_error.call(ex)
-              else
-                @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
-                @stderr.flush
-              end
-            end
-
-            if @tasks.first.class == OneTimeTask
-              @tasks.shift
-            else
-              sort_tasks
-            end
-          end
         else
           sleep
+        end
+
+        if @tasks.size == size
+          begin
+            @tasks.first.run
+          rescue ex
+            if on_error = @on_error
+              on_error.call(ex)
+            else
+              @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
+              @stderr.flush
+            end
+          end
+
+          if @tasks.first.class == OneTimeTask
+            @tasks.shift
+          else
+            sort_tasks
+          end
         end
 
         if fiber = @add_fiber
