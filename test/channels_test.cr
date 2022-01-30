@@ -26,7 +26,7 @@ class InChannelTest < Minitest::Test
       test_array << "Before Receive"
       test_array << add_channel.receive
       test_array << "After Receive"
-      main.resume
+      main.enqueue
     end
 
     assert test_array.empty?
