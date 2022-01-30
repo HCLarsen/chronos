@@ -13,14 +13,14 @@ class ChronosTest < Minitest::Test
   def test_adds_one_time_task_with_at
     test_val = 0
     scheduler = Chronos.new
+    scheduler.run
 
     scheduler.at(3.milliseconds.from_now) do
       test_val = 5
     end
 
-    task = scheduler.tasks.first
-    assert_equal Chronos::OneTimeTask, task.class
-    scheduler.run
+    # task = scheduler.tasks.first
+    # assert_equal Chronos::OneTimeTask, task.class
 
     sleep 2.milliseconds
     assert_equal 0, test_val
@@ -28,7 +28,7 @@ class ChronosTest < Minitest::Test
     sleep 4.milliseconds
     assert_equal 5, test_val
 
-    assert_equal 0, scheduler.tasks.size
+    # assert_equal 0, scheduler.tasks.size
   end
 
   def test_adds_one_time_task_with_in
@@ -39,8 +39,8 @@ class ChronosTest < Minitest::Test
       test_val = 5
     end
 
-    task = scheduler.tasks.first
-    assert_equal Chronos::OneTimeTask, task.class
+    # task = scheduler.tasks.first
+    # assert_equal Chronos::OneTimeTask, task.class
     scheduler.run
 
     sleep 2.milliseconds
@@ -51,25 +51,22 @@ class ChronosTest < Minitest::Test
   end
 
   def test_adds_multiple_tasks_out_of_order
-    test_val = 0
+    test_val = [] of String
     scheduler = Chronos.new
     scheduler.run
+    start = Time.monotonic
 
-    scheduler.in(6.milliseconds) do
-      test_val = 10
+    scheduler.in(40.milliseconds) do
+      test_val << "#{(Time.monotonic - start).milliseconds // 10}"
     end
 
-    scheduler.in(2.milliseconds) do
-      test_val = 5
+    scheduler.in(20.milliseconds) do
+      test_val << "#{(Time.monotonic - start).milliseconds // 10}"
     end
 
-    assert_equal 0, test_val
-
-    sleep 4.milliseconds
-    assert_equal 5, test_val
-
-    sleep 4.milliseconds
-    assert_equal 10, test_val
+    assert_equal [] of String, test_val
+    sleep 50.milliseconds
+    assert_equal ["2", "4"], test_val
   end
 
   def test_executes_multiple_tasks_at_same_time
@@ -143,27 +140,22 @@ class ChronosTest < Minitest::Test
     assert_equal 5, test_val
   end
 
-  def test_executes_period_and_one_time_tasks
-    array = [] of String
+  def test_executes_periodic_and_one_time_tasks
+    test_val = [] of String
     scheduler = Chronos.new
     scheduler.run
+    start = Time.monotonic
 
-    scheduler.every(20.milliseconds) do
-      array << "Periodic"
+    scheduler.every(40.milliseconds) do
+      test_val << "Periodic #{(Time.monotonic - start).milliseconds // 10}"
     end
 
-    scheduler.in(30.milliseconds) do
-      array << "One Time"
+    scheduler.in(60.milliseconds) do
+      test_val << "One Time #{(Time.monotonic - start).milliseconds // 10}"
     end
 
-    sleep 15.milliseconds
-    assert_equal [] of String, array
-    sleep 10.milliseconds
-    assert_equal ["Periodic"] of String, array
-    sleep 10.milliseconds
-    assert_equal ["Periodic", "One Time"] of String, array
-    sleep 10.milliseconds
-    assert_equal ["Periodic", "One Time", "Periodic"] of String, array
+    sleep 90.milliseconds
+    assert_equal ["Periodic 4", "One Time 6", "Periodic 8"] of String, test_val
   end
 
   def test_outputs_error

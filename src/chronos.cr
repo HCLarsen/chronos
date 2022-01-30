@@ -7,11 +7,15 @@ class Chronos
   property location : Time::Location
   getter tasks = [] of Task
   property stderr = STDERR
-  @fiber : Fiber?
+  getter running = false
+
+  @main_fiber : Fiber?
   @add_fiber : Fiber?
   @on_error : (Exception ->)?
+  @add_channel = Chronos::InChannel(Chronos::Task).new
 
   def initialize(@location = Time::Location.local)
+    # @main_fiber = run
   end
 
   def on_error(&on_error : Exception ->)
@@ -39,50 +43,81 @@ class Chronos
   end
 
   def run
-    spawn name: "Chronos-Main" do
+    tasks = Deque.new(@tasks)
+    @running = true
+
+    @main_fiber = spawn name: "Chronos-Main" do
       loop do
-        size = @tasks.size
+        size = tasks.size
         if size > 0
-          wait = @tasks.first.next_run - Time.local
+          wait = tasks.first.next_run - Time.local
+          # puts "5. Sleeping X"
           sleep wait if wait > 0.milliseconds
         else
+          # puts "2. Sleeping"
           sleep
         end
 
-        if @tasks.size == size
-          begin
-            @tasks.first.run
-          rescue ex
-            if on_error = @on_error
-              on_error.call(ex)
-            else
-              @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
-              @stderr.flush
-            end
-          end
+        if @add_channel.has_value
+          tasks << @add_channel.receive
+          tasks.sort_by! { |task| task.next_run }
+        else
+        # end
+        #
+        # if tasks.size == size && tasks.size > 0
+          current_task = tasks.first
+          execute_task(current_task)
 
-          if @tasks.first.class == OneTimeTask
-            @tasks.shift
+          if current_task.class == OneTimeTask
+            tasks.shift
           else
-            sort_tasks
+            # sort_tasks
+            tasks.sort_by! { |task| task.next_run }
           end
         end
 
         if fiber = @add_fiber
           fiber.enqueue
+          # puts "Enqueing"
           @add_fiber = nil
         end
+      end
+    end
+
+    Fiber.yield
+    # puts "1. Initialized"
+  end
+
+  private def main_fibre
+
+  end
+
+  private def execute_task(task : Task)
+    begin
+      task.run
+    rescue ex
+      if on_error = @on_error
+        on_error.call(ex)
+      else
+        @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
+        @stderr.flush
       end
     end
   end
 
   private def add_task(new_task : Task)
+    # puts "3. Adding"
     @tasks << new_task
     sort_tasks
 
+    if @running
+      @add_channel.send(new_task)
+    end
+
     @add_fiber = Fiber.current
 
-    if fiber = @fiber
+    if fiber = @main_fiber
+      # puts "4. Resuming"
       fiber.resume
     end
   end
