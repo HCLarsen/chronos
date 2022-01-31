@@ -51,7 +51,7 @@ class Chronos
         size = tasks.size
         if size > 0
           wait = tasks.first.next_run - Time.local
-          # puts "5. Sleeping X"
+          # puts "5. Sleeping #{wait.milliseconds}"
           sleep wait if wait > 0.milliseconds
         else
           # puts "2. Sleeping"
@@ -78,7 +78,6 @@ class Chronos
 
         if fiber = @add_fiber
           fiber.enqueue
-          # puts "Enqueing"
           @add_fiber = nil
         end
       end
@@ -111,15 +110,11 @@ class Chronos
     sort_tasks
 
     if @running
-      @add_channel.send(new_task)
+      @add_fiber = Fiber.current
+      fiber = @main_fiber.not_nil!
+      @add_channel.send(new_task, fiber)
     end
 
-    @add_fiber = Fiber.current
-
-    if fiber = @main_fiber
-      # puts "4. Resuming"
-      fiber.resume
-    end
   end
 
   private def sort_tasks
