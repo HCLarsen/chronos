@@ -42,11 +42,11 @@ end
 
 class OutChannelTest < Minitest::Test
   def test_returns_has_value
-    add_channel = Chronos::InChannel(String).new
+    out_channel = Chronos::OutChannel(String).new
 
-    refute add_channel.has_value
-    add_channel.send("Sending")
-    assert add_channel.has_value
+    refute out_channel.has_value
+    out_channel.send("Sending")
+    assert out_channel.has_value
   end
 
   def test_sends_string_out_without_interruption

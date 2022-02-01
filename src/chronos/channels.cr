@@ -27,11 +27,20 @@ class Chronos
       super(1)
     end
 
+    # Returns a boolean value indicating if there are any values in the channel
+    def has_value : Bool
+      if queue = @queue
+        queue.size > 0
+      else
+        false
+      end
+    end
+
     def send(value : T)
       if queue = @queue
         queue.clear
       end
-      
+
       super(value)
     end
   end
