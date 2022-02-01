@@ -5,14 +5,16 @@ class Chronos
   VERSION = "0.1.0"
 
   property location : Time::Location
-  getter tasks = [] of Task
+  # getter tasks = [] of Task
   property stderr = STDERR
   getter running = false
 
+  @tasks = [] of Task
   @main_fiber : Fiber?
   @add_fiber : Fiber?
   @on_error : (Exception ->)?
   @add_channel = Chronos::InChannel(Chronos::Task).new
+  @out_channel = Chronos::OutChannel(Array(Chronos::Task)).new
 
   def initialize(@location = Time::Location.local)
     # @main_fiber = run
@@ -20,6 +22,14 @@ class Chronos
 
   def on_error(&on_error : Exception ->)
     @on_error = on_error
+  end
+
+  def tasks
+    if @out_channel.has_value
+      @tasks = @out_channel.receive
+    end
+
+    @tasks
   end
 
   def at(run_time : Time, &block)
@@ -80,6 +90,8 @@ class Chronos
           fiber.enqueue
           @add_fiber = nil
         end
+
+        @out_channel.send(tasks.to_a)
       end
     end
 
@@ -106,13 +118,14 @@ class Chronos
 
   private def add_task(new_task : Task)
     # puts "3. Adding"
-    @tasks << new_task
-    sort_tasks
 
     if @running
       @add_fiber = Fiber.current
       fiber = @main_fiber.not_nil!
       @add_channel.send(new_task, fiber)
+    else
+      @tasks << new_task
+      sort_tasks
     end
 
   end
