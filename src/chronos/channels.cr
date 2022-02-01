@@ -21,4 +21,18 @@ class Chronos
       receiver.resume
     end
   end
+
+  class OutChannel(T) < Channel(T)
+    def initialize
+      super(1)
+    end
+
+    def send(value : T)
+      if queue = @queue
+        queue.clear
+      end
+      
+      super(value)
+    end
+  end
 end

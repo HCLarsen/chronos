@@ -38,7 +38,54 @@ class InChannelTest < Minitest::Test
 
     assert_equal ["Before Send", "Before Receive", "Sending", "After Receive", "After Send"], test_array
   end
+end
 
-  # def test_sends_string_out_without_interruption
-  # end
+class OutChannelTest < Minitest::Test
+  def test_returns_has_value
+    add_channel = Chronos::InChannel(String).new
+
+    refute add_channel.has_value
+    add_channel.send("Sending")
+    assert add_channel.has_value
+  end
+
+  def test_sends_string_out_without_interruption
+    test_array = [] of String
+    out_channel = Chronos::OutChannel(String).new
+
+    spawn do
+      test_array << "Before Send"
+      out_channel.send("Received")
+      test_array << "After Send"
+      sleep
+    end
+
+    assert test_array.empty?
+    Fiber.yield
+
+    test_array << "Before Receive"
+    test_array << out_channel.receive
+    test_array << "After Receive"
+
+    assert_equal ["Before Send", "After Send", "Before Receive", "Received", "After Receive"], test_array
+  end
+
+  def test_replaces_queue_with_new_data
+    test_array = [] of String
+    out_channel = Chronos::OutChannel(String).new
+
+    spawn do
+      out_channel.send("First")
+      out_channel.send("Second")
+      sleep
+    end
+
+    assert test_array.empty?
+    Fiber.yield
+
+    test_array << out_channel.receive
+
+    assert_equal ["Second"], test_array
+    # Instead of adding new data to the queue, it should replace it with all the new data
+  end
 end
