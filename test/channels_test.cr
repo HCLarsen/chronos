@@ -1,7 +1,6 @@
 require "minitest/autorun"
 
 require "/../src/chronos"
-# require "/../src/chronos/onetimetask"
 
 class InChannelTest < Minitest::Test
   def test_returns_has_value
@@ -26,7 +25,6 @@ class InChannelTest < Minitest::Test
       test_array << "Before Receive"
       test_array << add_channel.receive
       test_array << "After Receive"
-      main.enqueue
     end
 
     assert test_array.empty?

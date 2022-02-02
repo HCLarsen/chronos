@@ -86,11 +86,6 @@ class Chronos
           end
         end
 
-        if fiber = @add_fiber
-          fiber.enqueue
-          @add_fiber = nil
-        end
-
         @out_channel.send(tasks.to_a)
       end
     end
