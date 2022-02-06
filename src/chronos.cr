@@ -72,9 +72,6 @@ class Chronos
           tasks << @add_channel.receive
           tasks.sort_by! { |task| task.next_run }
         else
-        # end
-        #
-        # if tasks.size == size && tasks.size > 0
           current_task = tasks.first
           execute_task(current_task)
 
