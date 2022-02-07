@@ -86,10 +86,9 @@ All new features/modifcations, must be properly tested. Any PRs without passing 
 
 Features to be added:
 
-1. UID for all task classes.
-2. Memoization of main_fiber.
-3. Error handling of new task creation within Chronos class.
-4. Time string parsing for Chronos methods.
+1. Add delete feature using UIDs.
+2. Error handling of new task creation within Chronos class.
+3. Time string parsing for Chronos methods.
 
 ## Contributing
 
