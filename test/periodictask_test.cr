@@ -21,6 +21,14 @@ class PeriodicTaskTest < Minitest::Test
     assert_equal 5, test_val
   end
 
+  def test_creates_unique_id
+    period = 100.milliseconds
+    task1 = Chronos::PeriodicTask.new(period) { puts "Hello" }
+    task2 = Chronos::PeriodicTask.new(period) { puts "Hello" }
+
+    refute_equal task1.id, task2.id
+  end
+
   def test_initalizes_task_with_first_time
     test_val = 0
     period = 20.minutes

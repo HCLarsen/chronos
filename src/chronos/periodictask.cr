@@ -9,7 +9,9 @@ class Chronos
       if @period < Time::Span::ZERO
         raise "Invalid period"
       end
+
       @next_run = first_run || Time.local + @period
+      @id = "Periodic#{next_id}"
     end
 
     def next_run : Time

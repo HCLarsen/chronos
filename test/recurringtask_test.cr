@@ -22,6 +22,14 @@ class RecurringTaskTest < Minitest::Test
     assert_equal 5, @test_val
   end
 
+  def test_creates_unique_id
+    time_of_day = {hour: 8, minute: 30}
+    task1 = Chronos::RecurringTask.new(:day, time_of_day) { puts "Hello" }
+    task2 = Chronos::RecurringTask.new(:day, time_of_day) { puts "Hello" }
+
+    refute_equal task1.id, task2.id
+  end
+
   def test_initializes_other_frequencies
     task = Chronos::RecurringTask.new(:hour, {minute: 5}) do
       @test_val = 5

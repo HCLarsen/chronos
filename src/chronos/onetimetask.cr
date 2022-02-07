@@ -8,6 +8,8 @@ class Chronos
       if @run_time < Time.local
         raise "Invalid date"
       end
+
+      @id = "Onetime#{next_id}"
     end
 
     def next_run : Time

@@ -86,9 +86,9 @@ All new features/modifcations, must be properly tested. Any PRs without passing 
 
 Features to be added:
 
-1. On AddChannel, move enqueuing of sender fiber to inside the receive method.
-2. UID for all task classes.
-3. Memoization of main_fiber.
+1. UID for all task classes.
+2. Memoization of main_fiber.
+3. Error handling of new task creation within Chronos class.
 4. Time string parsing for Chronos methods.
 
 ## Contributing

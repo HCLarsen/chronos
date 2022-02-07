@@ -14,6 +14,7 @@ class Chronos
       end
 
       @times = [time.to_h]
+      @id = "Recurring#{next_id}"
     end
 
     def initialize(@frequency : Symbol, times : Array(NamedTuple), &@block)
@@ -22,6 +23,7 @@ class Chronos
       end
 
       @times = times.map { |e| e.to_h }
+      @id = "Recurring#{next_id}"
     end
 
     def next_run : Time

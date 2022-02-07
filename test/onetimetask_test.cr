@@ -16,6 +16,14 @@ class OneTimeTaskTest < Minitest::Test
     assert_equal 5, @test_val
   end
 
+  def test_creates_unique_id
+    run_time = Time.local + 20.minutes
+    task1 = Chronos::OneTimeTask.new(run_time) { puts "Hello" }
+    task2 = Chronos::OneTimeTask.new(run_time) { puts "Hello" }
+
+    refute_equal task1.id, task2.id
+  end
+
   def test_raises_for_past_date
     run_time = Time.local - 1.minutes
 
