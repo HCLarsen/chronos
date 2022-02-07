@@ -5,7 +5,6 @@ class Chronos
   VERSION = "0.1.0"
 
   property location : Time::Location
-  # getter tasks = [] of Task
   property stderr = STDERR
   getter running = false
 
@@ -17,14 +16,13 @@ class Chronos
   @out_channel = Chronos::OutChannel(Array(Chronos::Task)).new
 
   def initialize(@location = Time::Location.local)
-    # @main_fiber = run
   end
 
   def on_error(&on_error : Exception ->)
     @on_error = on_error
   end
 
-  def tasks
+  def tasks : Array(Task)
     if @out_channel.has_value
       @tasks = @out_channel.receive
     end
@@ -53,8 +51,20 @@ class Chronos
   end
 
   def run
-    tasks = Deque.new(@tasks)
     @running = true
+
+    main_fiber
+
+    Fiber.yield
+    # puts "1. Initialized"
+  end
+
+  private def main_fiber : Fiber
+    if fiber = @main_fiber
+      return fiber
+    end
+
+    tasks = Deque.new(@tasks)
 
     @main_fiber = spawn name: "Chronos-Main" do
       loop do
@@ -86,13 +96,6 @@ class Chronos
         @out_channel.send(tasks.to_a)
       end
     end
-
-    Fiber.yield
-    # puts "1. Initialized"
-  end
-
-  private def main_fibre
-
   end
 
   private def execute_task(task : Task)
@@ -113,8 +116,7 @@ class Chronos
 
     if @running
       @add_fiber = Fiber.current
-      fiber = @main_fiber.not_nil!
-      @add_channel.send(new_task, fiber)
+      @add_channel.send(new_task, main_fiber)
     else
       @tasks << new_task
       sort_tasks
