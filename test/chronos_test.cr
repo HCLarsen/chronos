@@ -161,11 +161,10 @@ class ChronosTest < Minitest::Test
   def test_deletes_task_with_id
     scheduler = Chronos.new
 
-    scheduler.at(20.milliseconds.from_now) { puts "Hello, world!" }
+    task = scheduler.at(20.milliseconds.from_now) { puts "Hello, world!" }
 
     assert_equal 1, scheduler.tasks.size
 
-    task = scheduler.tasks.first
     scheduler.delete_at(task.id)
     assert_equal 0, scheduler.tasks.size
   end

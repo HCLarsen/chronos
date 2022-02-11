@@ -10,7 +10,6 @@ class Chronos
 
   @tasks = [] of Task
   @main_fiber : Fiber?
-  @add_fiber : Fiber?
   @on_error : (Exception ->)?
   @add_channel = Chronos::InChannel(Chronos::Task).new
   @delete_channel = Chronos::InChannel(String).new
@@ -29,23 +28,23 @@ class Chronos
     @tasks
   end
 
-  def at(run_time : Time, &block)
+  def at(run_time : Time, &block) : Task
     add_task OneTimeTask.new(run_time, &block)
   end
 
-  def in(span : Time::Span, &block)
+  def in(span : Time::Span, &block) : Task
     at(span.from_now, &block)
   end
 
-  def every(period : Time::Span, &block)
+  def every(period : Time::Span, &block) : Task
     add_task PeriodicTask.new(period, &block)
   end
 
-  def every(period : Time::Span, start_time : Time, &block)
+  def every(period : Time::Span, start_time : Time, &block) : Task
     add_task PeriodicTask.new(period, start_time, &block)
   end
 
-  def every(period : Symbol, time : NamedTuple, &block)
+  def every(period : Symbol, time : NamedTuple, &block) : Task
     add_task RecurringTask.new(period, time, &block)
   end
 
@@ -63,7 +62,7 @@ class Chronos
     end
   end
 
-  def run
+  def run : Nil
     @running = true
 
     main_fiber
@@ -129,16 +128,17 @@ class Chronos
     end
   end
 
-  private def add_task(new_task : Task)
+  private def add_task(new_task : Task) : Task
     # puts "3. Adding"
 
     if @running
-      @add_fiber = Fiber.current
       @add_channel.send(new_task, main_fiber)
     else
       @tasks << new_task
       sort_tasks
     end
+
+    new_task
   end
 
   private def update_tasks
