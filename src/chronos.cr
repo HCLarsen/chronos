@@ -65,7 +65,7 @@ class Chronos
   def run : Nil
     @running = true
 
-    main_fiber
+    main_fiber.enqueue
 
     Fiber.yield
     # puts "1. Initialized"
@@ -78,14 +78,12 @@ class Chronos
 
     tasks = Deque.new(@tasks)
 
-    @main_fiber = spawn do
+    @main_fiber = Fiber.new do
       loop do
         if !tasks.empty?
           wait = tasks.first.next_run - Time.local
-          # puts "5. Sleeping #{wait.milliseconds}"
           sleep wait if wait > 0.milliseconds
         else
-          # puts "2. Sleeping"
           sleep
         end
 
