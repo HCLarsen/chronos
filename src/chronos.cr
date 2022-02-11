@@ -122,8 +122,9 @@ class Chronos
       if on_error = @on_error
         on_error.call(ex)
       else
-        @stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
-        @stderr.flush
+        stderr = @stderr
+        stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
+        stderr.flush
       end
     end
   end

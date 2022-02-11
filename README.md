@@ -86,9 +86,8 @@ All new features/modifcations, must be properly tested. Any PRs without passing 
 
 Features to be added:
 
-1. Add delete feature using UIDs.
-2. Error handling of new task creation within Chronos class.
-3. Time string parsing for Chronos methods.
+1. Error handling of new task creation within Chronos class.
+2. Time string parsing for Chronos methods.
 
 ## Contributing
 
