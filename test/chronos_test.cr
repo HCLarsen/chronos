@@ -158,6 +158,51 @@ class ChronosTest < Minitest::Test
     assert_equal ["Periodic 4", "One Time 6", "Periodic 8"] of String, test_val
   end
 
+  def test_deletes_task_with_id
+    scheduler = Chronos.new
+
+    scheduler.at(20.milliseconds.from_now) { puts "Hello, world!" }
+
+    assert_equal 1, scheduler.tasks.size
+
+    task = scheduler.tasks.first
+    scheduler.delete_at(task.id)
+    assert_equal 0, scheduler.tasks.size
+  end
+
+  def test_deletes_task_while_running
+    test_val = false
+    scheduler = Chronos.new
+    scheduler.run
+
+    scheduler.at(20.milliseconds.from_now) { test_val = true }
+
+    assert_equal 1, scheduler.tasks.size
+
+    task = scheduler.tasks.first
+    scheduler.delete_at(task.id)
+    assert_equal 0, scheduler.tasks.size
+
+    sleep 30.milliseconds
+    refute test_val
+  end
+
+  def test_raises_error_on_deleting_invalid_task
+    scheduler = Chronos.new
+
+    error = assert_raises do
+      scheduler.delete_at("gibberish")
+    end
+    assert_equal IndexError, error.class
+
+    scheduler.run
+
+    error = assert_raises do
+      scheduler.delete_at("gibberish")
+    end
+    assert_equal IndexError, error.class
+  end
+
   def test_outputs_error
     error_file = "errors.txt"
 

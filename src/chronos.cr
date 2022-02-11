@@ -13,6 +13,7 @@ class Chronos
   @add_fiber : Fiber?
   @on_error : (Exception ->)?
   @add_channel = Chronos::InChannel(Chronos::Task).new
+  @delete_channel = Chronos::InChannel(String).new
   @out_channel = Chronos::OutChannel(Array(Chronos::Task)).new
 
   def initialize(@location = Time::Location.local)
@@ -23,9 +24,7 @@ class Chronos
   end
 
   def tasks : Array(Task)
-    if @out_channel.has_value
-      @tasks = @out_channel.receive
-    end
+    update_tasks
 
     @tasks
   end
@@ -50,6 +49,20 @@ class Chronos
     add_task RecurringTask.new(period, time, &block)
   end
 
+  def delete_at(id : String) : Bool
+    if task = @tasks.find { |e| e.id == id  }
+      if @running
+        @delete_channel.send(id, main_fiber)
+      else
+        @tasks.delete(task)
+      end
+
+      return true
+    else
+      raise IndexError.new
+    end
+  end
+
   def run
     @running = true
 
@@ -66,10 +79,9 @@ class Chronos
 
     tasks = Deque.new(@tasks)
 
-    @main_fiber = spawn name: "Chronos-Main" do
+    @main_fiber = spawn do
       loop do
-        size = tasks.size
-        if size > 0
+        if !tasks.empty?
           wait = tasks.first.next_run - Time.local
           # puts "5. Sleeping #{wait.milliseconds}"
           sleep wait if wait > 0.milliseconds
@@ -78,17 +90,23 @@ class Chronos
           sleep
         end
 
-        if @add_channel.has_value
-          tasks << @add_channel.receive
-          tasks.sort_by! { |task| task.next_run }
-        else
+        if @add_channel.has_value || @delete_channel.has_value
+          if @add_channel.has_value
+            tasks << @add_channel.receive
+            tasks.sort_by! { |task| task.next_run }
+          end
+          if @delete_channel.has_value
+            id = @delete_channel.receive
+            task = tasks.find { |e| e.id == id  }
+            tasks.delete(task)
+          end
+        elsif !tasks.empty?
           current_task = tasks.first
           execute_task(current_task)
 
           if current_task.class == OneTimeTask
             tasks.shift
           else
-            # sort_tasks
             tasks.sort_by! { |task| task.next_run }
           end
         end
@@ -121,7 +139,12 @@ class Chronos
       @tasks << new_task
       sort_tasks
     end
+  end
 
+  private def update_tasks
+    if @out_channel.has_value
+      @tasks = @out_channel.receive
+    end
   end
 
   private def sort_tasks
