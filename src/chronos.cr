@@ -68,7 +68,6 @@ class Chronos
     main_fiber.enqueue
 
     Fiber.yield
-    # puts "1. Initialized"
   end
 
   private def main_fiber : Fiber
@@ -92,9 +91,10 @@ class Chronos
             tasks << @add_channel.receive
             tasks.sort_by! { |task| task.next_run }
           end
+
           if @delete_channel.has_value
             id = @delete_channel.receive
-            task = tasks.find { |e| e.id == id  }
+            task = tasks.find { |task| task.id == id  }
             tasks.delete(task)
           end
         elsif !tasks.empty?
@@ -128,7 +128,6 @@ class Chronos
   end
 
   private def add_task(new_task : Task) : Task
-    # puts "3. Adding"
 
     if @running
       @add_channel.send(new_task, main_fiber)
