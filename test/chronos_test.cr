@@ -31,6 +31,16 @@ class ChronosTest < Minitest::Test
     assert_equal 0, scheduler.tasks.size
   end
 
+  def test_raises_error_on_adding_invalid_task
+    scheduler = Chronos.new
+
+    error = assert_raises do
+      task = scheduler.at(-20.milliseconds.from_now) { puts "Hello, world!" }
+    end
+
+    assert_equal "Invalid date", error.message
+  end
+
   def test_adds_one_time_task_with_in
     test_val = 0
     scheduler = Chronos.new
