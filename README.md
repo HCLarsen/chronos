@@ -82,12 +82,11 @@ end
 
 ## Development
 
-All new features/modifcations, must be properly tested. Any PRs without passing tests will not be merged.
+All new features/modifications, must be properly tested. Any PRs without passing tests will not be merged.
 
 Features to be added:
 
-1. Error handling of new task creation within Chronos class.
-2. Time string parsing for Chronos methods.
+1. Time string parsing for Chronos methods.
 
 ## Contributing
 
