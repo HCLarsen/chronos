@@ -8,11 +8,11 @@ Crystal scheduling system.
 
 1. Add the dependency to your `shard.yml`:
 
-   ```yaml
-   dependencies:
-     chronos:
-       github: HCLarsen/chronos
-   ```
+```yaml
+dependencies:
+  chronos:
+    github: HCLarsen/chronos
+```
 
 2. Run `shards install`
 
@@ -86,7 +86,8 @@ All new features/modifications, must be properly tested. Any PRs without passing
 
 Features to be added:
 
-1. Time string parsing for Chronos methods.
+1. Move task execution into separate fibre.
+2. Time string parsing for Chronos methods.
 
 ## Contributing
 
