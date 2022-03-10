@@ -128,7 +128,6 @@ class Chronos
   end
 
   private def add_task(new_task : Task) : Task
-
     if @running
       @add_channel.send(new_task, main_fiber)
     else
