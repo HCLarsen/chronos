@@ -1,25 +1,27 @@
+require "log"
+
 require "./chronos/*"
 
 # TODO: Write documentation for `Chronos`
 class Chronos
   VERSION = "0.1.0"
 
+  LOG_FORMATTER = Log::Formatter.new do |entry, io|
+    io << entry.timestamp.to_s("%Y/%m/%d %T %:z") << " [" << entry.source << "/" << Process.pid << "] "
+    io << entry.severity << " " << entry.message
+  end
+
   property location : Time::Location
-  property stderr = STDERR
   getter running = false
+  property log : Log = create_logger
 
   @tasks = [] of Task
   @main_fiber : Fiber?
-  @on_error : (Exception ->)?
   @add_channel = Chronos::InChannel(Chronos::Task).new
   @delete_channel = Chronos::InChannel(String).new
   @out_channel = Chronos::OutChannel(Array(Chronos::Task)).new
 
   def initialize(@location = Time::Location.local)
-  end
-
-  def on_error(&on_error : Exception ->)
-    @on_error = on_error
   end
 
   def tasks : Array(Task)
@@ -117,13 +119,7 @@ class Chronos
     begin
       task.run
     rescue ex
-      if on_error = @on_error
-        on_error.call(ex)
-      else
-        stderr = @stderr
-        stderr.puts "#{Time.local}: #{ex.class} - #{ex.message}"
-        stderr.flush
-      end
+      @log.error { "#{ex.class} - #{ex.message}" }
     end
   end
 
@@ -146,5 +142,12 @@ class Chronos
 
   private def sort_tasks
     @tasks.sort_by! { |task| task.next_run }
+  end
+
+  private def self.create_logger : Log
+    log = Log.for(self)
+    backend = Log::IOBackend.new(formatter: LOG_FORMATTER)
+    log.backend = backend
+    log
   end
 end

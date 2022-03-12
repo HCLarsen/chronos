@@ -60,24 +60,16 @@ scheduler.location = Time::Location.local
 
 ### Error Handling
 
-By default, any errors raised inside a task are logged to STDERR without any interruption of the scheduler. You can modify the destination of the errors to any `IO::FileDescriptor` or subclass, such as a file.
+Unhandled exceptions raised when executing a task are logged to a [`Log`](https://crystal-lang.org/api/latest/Log.html) object.
+
+```
+2022-01-11 19:25:10 -05:00 [chronos/2452] Info: RuntimeError - Random error
+```
+
+A default log is created when a `Chronos` instance is initialized, but you can also set it to a custom logger.
 
 ```crystal
-scheduler.stderr = File.new("logs/errors.txt", "w")
-```
-
-These errors take on the following format, showing time, error class, and error message
-
-```
-2022-01-11 19:25:10 -05:00: RuntimeError - Random error
-```
-
-Lastly, it's possible to enter a custom callback using #on_error, allowing you to integrate with a logging system, like Crystal's built in [`Log`](https://crystal-lang.org/api/latest/Log.html) class.
-
-```crystal
-scheduler.on_error do |ex|
-  Log.error(exception: ex)
-end
+scheduler.log = Log.for("custom logger")
 ```
 
 ## Development

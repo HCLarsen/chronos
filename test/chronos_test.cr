@@ -212,11 +212,26 @@ class ChronosTest < Minitest::Test
     assert_equal IndexError, error.class
   end
 
-  def test_outputs_error
-    error_file = "errors.txt"
-
+  def test_logs_error
     scheduler = Chronos.new
-    scheduler.stderr = File.new(error_file, "w")
+
+    scheduler.in(2.milliseconds) do
+      raise RuntimeError.new("Random error")
+    end
+
+    assert_output(stdout: /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}.*Error RuntimeError - Random error/) do
+      scheduler.run
+      sleep 4.milliseconds
+    end
+  end
+
+  def test_uses_custom_log
+    scheduler = Chronos.new
+
+    error_file = "errors.txt"
+    log = scheduler.log
+    log.backend = Log::IOBackend.new(File.new(error_file, "w"))
+    scheduler.log = log
 
     scheduler.in(2.milliseconds) do
       raise RuntimeError.new("Random error")
@@ -230,27 +245,5 @@ class ChronosTest < Minitest::Test
     assert log.includes?("RuntimeError - Random error")
 
     File.delete(error_file) if File.exists?(error_file)
-  end
-
-  def test_handles_error_block
-    log_file = "log.txt"
-    scheduler = Chronos.new
-
-    scheduler.on_error do |ex|
-      File.write(log_file, ex.message, mode: "w")
-    end
-
-    scheduler.in(2.milliseconds) do
-      raise RuntimeError.new("Random error")
-    end
-
-    scheduler.run
-    sleep 4.milliseconds
-
-    log = File.read(log_file)
-    assert_equal 1, log.lines.size
-    assert log.includes?("Random error")
-
-    File.delete(log_file) if File.exists?(log_file)
   end
 end
