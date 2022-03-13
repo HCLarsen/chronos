@@ -116,11 +116,15 @@ class Chronos
   end
 
   private def execute_task(task : Task)
-    begin
-      task.run
-    rescue ex
-      @log.error { "#{ex.class} - #{ex.message}" }
+    spawn do
+      begin
+        task.run
+      rescue ex
+        @log.error { "#{ex.class} - #{ex.message}" }
+      end
     end
+
+    sleep 1.milliseconds
   end
 
   private def add_task(new_task : Task) : Task

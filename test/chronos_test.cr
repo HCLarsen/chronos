@@ -83,7 +83,7 @@ class ChronosTest < Minitest::Test
     test_val = 0
     scheduler = Chronos.new
 
-    execute_time = 3.milliseconds.from_now
+    execute_time = 4.milliseconds.from_now
 
     scheduler.at(execute_time) { test_val += 5 }
 
@@ -91,7 +91,7 @@ class ChronosTest < Minitest::Test
 
     scheduler.run
 
-    sleep 5.milliseconds
+    sleep 7.milliseconds
     assert_equal 10, test_val
   end
 
