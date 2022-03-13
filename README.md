@@ -2,7 +2,7 @@
 
 Crystal scheduling system.
 
-**WARNING** This shard is not ready for use yet.
+**WARNING** This shard has not been tested to be threadsafe.
 
 ## Installation
 
@@ -23,23 +23,23 @@ require "chronos"
 
 scheduler = Chronos.new
 
-scheduler.in("5m") do
+scheduler.in(5.minutes) do
   # do something in 5 minutes
 end
 
-scheduler.at("01/07/2022 0:00:00") do
+scheduler.at(Time.local(2022, 3, 12, 22, 0, 0, location: Time::Location.load("America/Toronto"))) do
   # do something at this specific point in time.
 end
 
-scheduler.every("1h") do
+scheduler.every(1.hour) do
   # do something every hour
 end
 
-scheduler.every("1h", "01/07/2022 0:00:00") do
+scheduler.every(1.day, Time.local(2022, 3, 12, 22, 0, 0, location: Time::Location.load("America/Toronto"))) do
   # do something every hour starting at midnight on January 7th, 2022
 end
 
-scheduler.every(:day, "08:30:00") do
+scheduler.every(:day, {hour: 8, minute: 30}) do
   # do something at 8:30AM every day
 end
 
@@ -78,8 +78,7 @@ All new features/modifications, must be properly tested. Any PRs without passing
 
 Features to be added:
 
-1. Move task execution into separate fibre.
-2. Time string parsing for Chronos methods.
+1. Time string parsing for Chronos methods.
 
 ## Contributing
 
