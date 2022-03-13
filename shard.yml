@@ -11,6 +11,6 @@ development_dependencies:
   timecop:
     github: crystal-community/timecop.cr
 
-crystal: 1.0.0
+crystal: ">= 1.0.0"
 
 license: MIT
