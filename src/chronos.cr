@@ -13,12 +13,13 @@ class Chronos
 
   property location : Time::Location
   getter running = false
-  property log : Log = create_logger
 
   @task_mutex = Mutex.new
+  @log_mutex = Mutex.new
   @reset = false
   @tasks = [] of Task
   @main_fiber : Fiber?
+  @log : Log = create_logger
 
   def initialize(@location = Time::Location.local)
   end
@@ -26,6 +27,18 @@ class Chronos
   def tasks : Array(Task)
     @task_mutex.synchronize do
       return @tasks
+    end
+  end
+
+  def log : Log
+    @log_mutex.synchronize do
+      return @log
+    end
+  end
+
+  def log=(log : Log)
+    @log_mutex.synchronize do
+      @log = log
     end
   end
 
@@ -114,7 +127,9 @@ class Chronos
       begin
         task.run
       rescue ex
-        @log.error { "#{ex.class} - #{ex.message}" }
+        @log_mutex.synchronize do
+          @log.error { "#{ex.class} - #{ex.message}" }
+        end
       end
     end
 
