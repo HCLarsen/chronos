@@ -66,14 +66,14 @@ class Chronos
     @task_mutex.synchronize do
       if task = @tasks.find { |e| e.id == id  }
         @tasks.delete(task)
-
-        reset_loop
-
-        return true
       else
         raise IndexError.new
       end
     end
+
+    reset_loop
+
+    return true
   end
 
   def run : Nil
