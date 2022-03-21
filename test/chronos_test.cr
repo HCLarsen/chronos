@@ -185,12 +185,13 @@ class ChronosTest < Minitest::Test
     scheduler.run
 
     scheduler.at(20.milliseconds.from_now) { test_val = true }
+    scheduler.at(40.milliseconds.from_now) { test_val = true }
 
-    assert_equal 1, scheduler.tasks.size
+    assert_equal 2, scheduler.tasks.size
 
     task = scheduler.tasks.first
     scheduler.delete_at(task.id)
-    assert_equal 0, scheduler.tasks.size
+    assert_equal 1, scheduler.tasks.size
 
     sleep 30.milliseconds
     refute test_val

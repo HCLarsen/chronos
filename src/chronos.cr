@@ -4,7 +4,7 @@ require "./chronos/*"
 
 # TODO: Write documentation for `Chronos`
 class Chronos
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   LOG_FORMATTER = Log::Formatter.new do |entry, io|
     io << entry.timestamp.to_s("%Y/%m/%d %T %:z") << " [" << entry.source << "/" << Process.pid << "] "
@@ -13,21 +13,33 @@ class Chronos
 
   property location : Time::Location
   getter running = false
-  property log : Log = create_logger
 
+  @task_mutex = Mutex.new
+  @log_mutex = Mutex.new
+  @reset = false
   @tasks = [] of Task
   @main_fiber : Fiber?
-  @add_channel = Chronos::InChannel(Chronos::Task).new
-  @delete_channel = Chronos::InChannel(String).new
-  @out_channel = Chronos::OutChannel(Array(Chronos::Task)).new
+  @log : Log = create_logger
 
   def initialize(@location = Time::Location.local)
   end
 
   def tasks : Array(Task)
-    update_tasks
+    @task_mutex.synchronize do
+      return @tasks
+    end
+  end
 
-    @tasks
+  def log : Log
+    @log_mutex.synchronize do
+      return @log
+    end
+  end
+
+  def log=(log : Log)
+    @log_mutex.synchronize do
+      @log = log
+    end
   end
 
   def at(run_time : Time, &block) : Task
@@ -51,17 +63,17 @@ class Chronos
   end
 
   def delete_at(id : String) : Bool
-    if task = @tasks.find { |e| e.id == id  }
-      if @running
-        @delete_channel.send(id, main_fiber)
-      else
+    @task_mutex.synchronize do
+      if task = @tasks.find { |e| e.id == id  }
         @tasks.delete(task)
+      else
+        raise IndexError.new
       end
-
-      return true
-    else
-      raise IndexError.new
     end
+
+    reset_loop
+
+    return true
   end
 
   def run : Nil
@@ -77,40 +89,35 @@ class Chronos
       return fiber
     end
 
-    tasks = Deque.new(@tasks)
-
     @main_fiber = Fiber.new do
       loop do
-        if !tasks.empty?
-          wait = tasks.first.next_run - Time.local
-          sleep wait if wait > 0.milliseconds
-        else
+        @reset = false
+        wait : Time::Span? = nil
+
+        @task_mutex.synchronize do
+          if !@tasks.empty?
+            wait = @tasks.first.next_run - Time.local
+          end
+        end
+
+        if wait.nil?
           sleep
+        elsif wait > 0.milliseconds
+          sleep wait
         end
 
-        if @add_channel.has_value || @delete_channel.has_value
-          if @add_channel.has_value
-            tasks << @add_channel.receive
-            tasks.sort_by! { |task| task.next_run }
-          end
+        @task_mutex.synchronize do
+          if !@tasks.empty? && !@reset
+            current_task = @tasks.first
+            execute_task(current_task)
 
-          if @delete_channel.has_value
-            id = @delete_channel.receive
-            task = tasks.find { |task| task.id == id  }
-            tasks.delete(task)
-          end
-        elsif !tasks.empty?
-          current_task = tasks.first
-          execute_task(current_task)
-
-          if current_task.class == OneTimeTask
-            tasks.shift
-          else
-            tasks.sort_by! { |task| task.next_run }
+            if current_task.class == OneTimeTask
+              @tasks.shift
+            else
+              sort_tasks
+            end
           end
         end
-
-        @out_channel.send(tasks.to_a)
       end
     end
   end
@@ -120,7 +127,9 @@ class Chronos
       begin
         task.run
       rescue ex
-        @log.error { "#{ex.class} - #{ex.message}" }
+        @log_mutex.synchronize do
+          @log.error { "#{ex.class} - #{ex.message}" }
+        end
       end
     end
 
@@ -128,19 +137,21 @@ class Chronos
   end
 
   private def add_task(new_task : Task) : Task
-    if @running
-      @add_channel.send(new_task, main_fiber)
-    else
+    @task_mutex.synchronize do
       @tasks << new_task
       sort_tasks
     end
 
+    reset_loop
+
     new_task
   end
 
-  private def update_tasks
-    if @out_channel.has_value
-      @tasks = @out_channel.receive
+  private def reset_loop
+    @reset = true
+    if @running
+      Fiber.current.enqueue
+      main_fiber.resume
     end
   end
 
