@@ -4,7 +4,7 @@ require "./chronos/*"
 
 # TODO: Write documentation for `Chronos`
 class Chronos
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   LOG_FORMATTER = Log::Formatter.new do |entry, io|
     io << entry.timestamp.to_s("%Y/%m/%d %T %:z") << " [" << entry.source << "/" << Process.pid << "] "
