@@ -40,6 +40,21 @@ class RecurringTaskTest < Minitest::Test
     end
   end
 
+  def test_initializes_weekly_task
+    times = [{dayOfWeek: 1, hour: 12, minute: 15}]
+    task = Chronos::RecurringTask.new(:week, times) do
+      @test_val = 5
+    end
+
+    Timecop.travel(Time.local(2021, 11, 1, 15, 30, 0)) do
+      assert_equal Time.local(2021, 11, 8, 12, 15, 0), task.next_run
+    end
+
+    Timecop.travel(Time.local(2021, 11, 3, 9, 30, 0)) do
+      assert_equal Time.local(2021, 11, 8, 12, 15, 0), task.next_run
+    end
+  end
+
   def test_initializes_with_multiple_times
     times = [{day: 1}, {day: 15}]
     task = Chronos::RecurringTask.new(:month, times) do
@@ -51,7 +66,7 @@ class RecurringTaskTest < Minitest::Test
     end
   end
 
-  def test_calculates_next_across_timezone_change
+  def test_calculates_next_across_dst_change
     time_of_day = {hour: 8, minute: 30}
     task = Chronos::RecurringTask.new(:day, time_of_day) do
       @test_val = 5
@@ -59,6 +74,17 @@ class RecurringTaskTest < Minitest::Test
 
     Timecop.travel(Time.local(2021, 11, 6, 9, 30, 0)) do
       assert_equal Time.local(2021, 11, 7, 8, 30, 0), task.next_run
+    end
+  end
+
+  def test_calculates_weekly_next_across_day_change
+    times = [{dayOfWeek: 7, hour: 12, minute: 15}]
+    task = Chronos::RecurringTask.new(:week, times) do
+      @test_val = 5
+    end
+
+    Timecop.travel(Time.local(2011, 12, 26, 9, 30, 0)) do
+      assert_equal Time.local(2012, 1, 1, 12, 15, 0), task.next_run
     end
   end
 

@@ -3,7 +3,7 @@ require "./task"
 class Chronos
   class RecurringTask < Task
     # :nodoc:
-    FREQUENCIES = [:year, :month, :day, :hour, :minute, :second]
+    FREQUENCIES = [:year, :month, :day, :hour, :minute, :second, :week]
 
     @frequency : Symbol
     @times : Array(Hash(Symbol, Int32))
@@ -34,12 +34,21 @@ class Chronos
       next_times = @times.map do |time|
         hash = blank_time_hash.merge(base_components).merge(time)
 
-        time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+        if weekday = hash.delete(:dayOfWeek)
+          days_away = weekday - now.day_of_week.value
+          days_away += 7 if days_away < 0
 
-        if (time < now)
-          shift_time_by_frequency(time)
+          new_time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+
+          new_time = new_time.shift(days: days_away)
         else
-          time
+          new_time = Time.local(**{year: Int32, month: Int32, day: Int32, hour: Int32, minute: Int32, second: Int32}.from(hash))
+        end
+
+        if (new_time < now)
+          shift_time_by_frequency(new_time)
+        else
+          new_time
         end
       end
 
@@ -47,7 +56,11 @@ class Chronos
     end
 
     def beginning_time_components(time : Time) : Hash(Symbol, Int32)
-      index = FREQUENCIES.index(@frequency)
+      if @frequency == :week
+        FREQUENCIES.index(:day)
+      else
+        index = FREQUENCIES.index(@frequency)
+      end
 
       time_components(time).select(FREQUENCIES[0..index])
     end
@@ -71,6 +84,8 @@ class Chronos
         time.shift(years: 1)
       when :month
         time.shift(months: 1)
+      when :week
+        time.shift(days: 7)
       when :day
         time.shift(days: 1)
       when :hour
