@@ -46,6 +46,10 @@ class RecurringTaskTest < Minitest::Test
       @test_val = 5
     end
 
+    Timecop.travel(Time.local(2021, 11, 1, 9, 30, 0)) do
+      assert_equal Time.local(2021, 11, 1, 12, 15, 0), task.next_run
+    end
+
     Timecop.travel(Time.local(2021, 11, 1, 15, 30, 0)) do
       assert_equal Time.local(2021, 11, 8, 12, 15, 0), task.next_run
     end
@@ -77,7 +81,10 @@ class RecurringTaskTest < Minitest::Test
     end
   end
 
-  def test_calculates_weekly_next_across_day_change
+  def test_calculates_weekly_with_six_day_week
+    local = Time::Location.local
+    Time::Location.local = Time::Location.load("Pacific/Apia")
+
     times = [{dayOfWeek: 7, hour: 12, minute: 15}]
     task = Chronos::RecurringTask.new(:week, times) do
       @test_val = 5
@@ -86,6 +93,8 @@ class RecurringTaskTest < Minitest::Test
     Timecop.travel(Time.local(2011, 12, 26, 9, 30, 0)) do
       assert_equal Time.local(2012, 1, 1, 12, 15, 0), task.next_run
     end
+
+    Time::Location.local = local
   end
 
   def test_raises_error_for_invalid_frequency
