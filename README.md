@@ -74,11 +74,13 @@ scheduler.log = Log.for("custom logger")
 
 ## Development
 
-All new features/modifications, must be properly tested. Any PRs without passing tests will not be merged.
+All new features/modifications, must be properly tested using [Minitest.cr](https://github.com/ysbaddaden/minitest.cr). Any PRs without passing tests will not be merged.
 
 Features to be added:
 
-1. Time string parsing for Chronos methods.
+1. Add new `#every` for RecurringTask with multiple times.
+2. Add more error checking to RecurringTask for invalid time components and combinations.
+3. Time string parsing for Chronos methods.
 
 ## Contributing
 

@@ -1,6 +1,51 @@
 require "./task"
 
 class Chronos
+  # A `RecurringTask` is a `Task` that runs at a specified frequency, at
+  # at specified times, set by a `NamedTuple` of time components.
+  #
+  # ### Difference from `PeriodicTask`
+  #
+  # The significant difference between a `PeriodicTask` and a `RecurringTask`
+  # is that a *period* is based on the amount of time passing, and a
+  # `RecurringTask` executes based on the time components.
+  #
+  # For example, a `PeriodicTask` with a period of 1 day, with a *first_run*
+  # at 9:00PM, will execute at 9:00PM until Daylight Saving Time takes effect,
+  # and then it will execute at 10:00PM every day until Daylight Saving Time
+  # ends.
+  #
+  # On the other hand, a `RecurringTask` with a frequency of days, and a time
+  # component specifying 9:00PM, will always execute at the same time every
+  # day, regardless of Daylight Saving Time, or any other potential change
+  # in the time zone offset.
+  #
+  # ### Valid Settings
+  #
+  # There are seven valid frequencies:
+  #
+  # ```
+  # :year, :month, :day, :hour, :minute, :second, :week
+  # ```
+  # There are five valid time components:
+  #
+  # ```
+  # :month      # Month of the year, only valid for yearly events.
+  # :day        # Day of month.
+  # :dayOfWeek  # Specifies the day of the week as an integer.
+  # :hour       # Hour of day, based on a 24 hour clock.
+  # :minute     # Minute within the hour.
+  # :second     # Second within the minute.
+  # ```
+  #
+  # Times are always calculated based on `Time::Location.local`
+  #
+  # All time compoent values must be specified as `Int32`. At this time,
+  # negative values, i.e., counting backwards from the end of the period,
+  # are not accepted.
+  #
+  # NOTE: `:dayOfWeek` is incompatible with `:day`, and attempting to use both
+  # will raise an error during initialization.
   class RecurringTask < Task
     # :nodoc:
     FREQUENCIES = [:year, :month, :day, :hour, :minute, :second, :week]
@@ -8,6 +53,14 @@ class Chronos
     @frequency : Symbol
     @times : Array(Hash(Symbol, Int32))
 
+    # Creates a new `RecurringTask` with the given frequency and a single set
+    # of time components.
+    #
+    # ```
+    # task = Chronos::RecurringTask.new(:day, {hour: 8, minute: 30}) do
+    #   puts "It's currently 8:30AM"
+    # end
+    # ```
     def initialize(@frequency : Symbol, time : NamedTuple, &@block)
       if !FREQUENCIES.includes? @frequency
         raise "Invalid frequency"
@@ -17,6 +70,14 @@ class Chronos
       @id = "Recurring#{next_id}"
     end
 
+    # Creates a new `RecurringTask` with the given frequency and multiple sets
+    # of time components.
+    #
+    # ```
+    # task = Chronos::RecurringTask.new(:month, times) do
+    #   puts "Hello, world!"
+    # end
+    # ```
     def initialize(@frequency : Symbol, times : Array(NamedTuple), &@block)
       if !FREQUENCIES.includes? @frequency
         raise "Invalid frequency"
@@ -26,6 +87,7 @@ class Chronos
       @id = "Recurring#{next_id}"
     end
 
+    # :inherit:
     def next_run : Time
       now = Time.local
       blank_time_hash = {:year => 0, :month => 0, :day => 0, :hour => 0, :minute => 0, :second => 0}
@@ -55,7 +117,7 @@ class Chronos
       next_times.min
     end
 
-    def beginning_time_components(time : Time) : Hash(Symbol, Int32)
+    private def beginning_time_components(time : Time) : Hash(Symbol, Int32)
       if @frequency == :week
         FREQUENCIES.index(:day)
       else
@@ -65,7 +127,7 @@ class Chronos
       time_components(time).select(FREQUENCIES[0..index])
     end
 
-    def time_components(time : Time) : Hash(Symbol, Int32)
+    private def time_components(time : Time) : Hash(Symbol, Int32)
       components = {} of Symbol => Int32
 
       components[:year] = time.year
@@ -78,7 +140,7 @@ class Chronos
       components
     end
 
-    def shift_time_by_frequency(time : Time) : Time
+    private def shift_time_by_frequency(time : Time) : Time
       case @frequency
       when :year
         time.shift(years: 1)
